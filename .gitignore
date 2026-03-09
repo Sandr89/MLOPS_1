@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Env & secrets
+.env
+.env.local
+*.pem
+kaggle.json
+
+# Data & models
+data/
+models/
+*.pkl
+*.joblib
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Project artifacts
+artifacts/
+.trash/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+download_data.py
