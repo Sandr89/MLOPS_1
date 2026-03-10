@@ -8,3 +8,4 @@ jupyter
 nltk
 regex
 kaggle
+dvc
