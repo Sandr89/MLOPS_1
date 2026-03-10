@@ -1,0 +1,17 @@
+stages:
+  prepare:
+    cmd: python src/prepare.py data/raw/train.csv data/prepared
+    deps:
+      - data/raw/train.csv
+      - src/prepare.py
+      - src/preprocess.py
+    outs:
+      - data/prepared
+
+  train:
+    cmd: python src/train.py data/prepared data/models
+    deps:
+      - data/prepared
+      - src/train.py
+    outs:
+      - data/models

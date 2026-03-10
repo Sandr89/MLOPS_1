@@ -38,6 +38,7 @@ mlflow.db
 # Project artifacts
 artifacts/
 .trash/
+dvc_storage/
 
 # IDE
 .idea/
