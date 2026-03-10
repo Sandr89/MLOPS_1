@@ -1,4 +1,4 @@
-# Лабораторна робота №1 - MLOps (Варіант 19)
+# Лабораторна робота №1–2 - MLOps (Варіант 19)
 
 **Twitter Sentiment Analysis (Hate Speech)** — виявлення расистських/сексистських твітів.
 
@@ -9,17 +9,19 @@ laba1_v2/
 ├── .gitignore
 ├── requirements.txt
 ├── README.md
-├── download_data.py      # Скрипт завантаження датасету
+├── dvc.yaml              # DVC пайплайн (prepare → train)
+├── dvc.lock              # Фіксація версій
 ├── data/
-│   └── raw/              # train.csv (завантажити з Kaggle)
-├── sample_data/          # train_sample.csv для тесту без завантаження
+│   ├── raw/              # train.csv (DVC: data/raw/train.csv.dvc)
+│   ├── prepared/         # вихід prepare (train.csv, test.csv)
+│   └── models/           # вихід train (model.joblib)
+├── src/
+│   ├── prepare.py        # Етап підготовки даних
+│   ├── train.py          # Етап навчання + MLflow
+│   └── preprocess.py     # Очистка тексту
 ├── notebooks/
 │   └── 01_eda.ipynb      # EDA
-├── src/
-│   ├── train.py          # Навчання + MLflow
-│   └── preprocess.py     # Очистка тексту
-├── mlruns/               # Логи MLflow
-└── models/
+└── mlruns/               # Логи MLflow
 ```
 
 ## Встановлення
@@ -41,19 +43,33 @@ pip install -r requirements.txt
 
 ## Використання
 
+### DVC-пайплайн (Lab 2)
+Дані та модель версіонуються через DVC. Повний цикл:
+```bash
+# Після клону: завантажити дані з remote
+dvc pull
+
+# Запустити пайплайн (prepare → train)
+dvc repro
+```
+Повторний `dvc repro` без змін пропускає кроки (кеш). Зміна коду або даних перезапускає лише потрібні стадії.
+
+Одноразове налаштування (вже зроблено в репо):
+- `dvc init` — ініціалізація DVC
+- `dvc remote add -d mylocal ../dvc_storage` — локальне сховище
+- `dvc add data/raw/train.csv` — версіонування сирих даних
+- `dvc push` — відправити дані в remote
+
 ### EDA
 ```bash
 jupyter notebook notebooks/01_eda.ipynb
 ```
 
-### Навчання (5+ експериментів для аналізу overfitting)
+### Навчання (вручну, після prepare)
 ```bash
-python src/train.py --max_depth 2
-python src/train.py --max_depth 5
-python src/train.py --max_depth 10
-python src/train.py --max_depth 20
-python src/train.py --max_depth 50
+python src/train.py data/prepared data/models --max_depth 10
 ```
+Або 5+ експериментів для аналізу overfitting: змінювати `--max_depth` (2, 5, 10, 20, 50).
 
 ### MLflow UI
 **Важливо:** Запускати з директорії проєкту, або використати скрипт:
@@ -65,12 +81,13 @@ mlflow ui
 ```
 Відкрити http://127.0.0.1:5000 → Compare запусків.
 
-## CLI-аргументи
+## CLI-аргументи (train.py)
 
 | Аргумент | Опис | За замовчуванням |
 |----------|------|------------------|
+| prepared_dir | Шлях до data/prepared | — |
+| model_dir | Шлях для збереження моделі | — |
 | --max_features | Макс. ознак TF-IDF | 5000 |
 | --n_estimators | Кількість дерев | 100 |
 | --max_depth | Глибина дерева | 10 |
 | --random_state | Seed | 42 |
-| --test_size | Частка тесту | 0.2 |
