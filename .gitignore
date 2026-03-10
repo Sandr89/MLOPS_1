@@ -18,8 +18,11 @@ build/
 *.pem
 kaggle.json
 
-# Data & models
-data/
+# Data & models (DVC: track .dvc files under data/raw/)
+data/*
+!data/raw/
+data/raw/*
+!data/raw/*.dvc
 models/
 *.pkl
 *.joblib
