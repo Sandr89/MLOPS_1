@@ -25,6 +25,8 @@ from sklearn.model_selection import train_test_split
 
 PROJECT_ROOT = Path(__file__).parent.parent
 
+from src.mlflow_utils import get_registry_uri, get_tracking_uri
+
 
 def set_global_seed(seed: int) -> None:
     random.seed(seed)
@@ -186,8 +188,8 @@ def main(cfg: DictConfig) -> None:
     set_global_seed(int(cfg.seed))
     train_df, test_df = load_prepared_data(cfg.paths.prepared_dir)
 
-    tracking_uri = cfg.mlflow.tracking_uri
-    mlflow.set_tracking_uri(tracking_uri)
+    mlflow.set_tracking_uri(get_tracking_uri())
+    mlflow.set_registry_uri(get_registry_uri())
     mlflow.set_experiment(cfg.mlflow.experiment_name)
 
     if cfg.hpo.sampler == "tpe":

@@ -13,7 +13,7 @@ paths:
   report_dir: reports
 
 mlflow:
-  tracking_uri: file:///G:/Stuff/University shit/MLOPS/laba1_v2/mlruns
+  tracking_uri: sqlite:///mlflow.db
   experiment_name: Twitter_Hate_Speech_HPO_V19
 
 hydra:

@@ -31,13 +31,13 @@ stages:
       nfiles: 2
     - path: src/train.py
       hash: md5
-      md5: 856e80d9505026bc483a78c7b17c0940
-      size: 6305
+      md5: c866f26f5472d5f5502b7075a466ecf1
+      size: 6591
     outs:
     - path: data/models
       hash: md5
-      md5: aeb92928e4764de25f36baa7142fbce3.dir
-      size: 789701
+      md5: befc65b1a26f4ec479b861000e816789.dir
+      size: 789799
       nfiles: 4
   optimize:
     cmd: .\venv\Scripts\python.exe src/optimize.py

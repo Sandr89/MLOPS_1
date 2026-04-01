@@ -27,6 +27,8 @@ from sklearn.metrics import (
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.mlflow_utils import get_registry_uri, get_tracking_uri
+
 
 def plot_feature_importance(
     model,
@@ -146,10 +148,10 @@ def main():
     )
     plot_confusion_matrix(y_test, y_test_pred, save_path=str(confusion_matrix_file))
 
-    mlruns_path = (PROJECT_ROOT / "mlruns").resolve()
-    mlflow.set_tracking_uri(f"file:///{mlruns_path.as_posix()}")
+    mlflow.set_tracking_uri(get_tracking_uri())
+    mlflow.set_registry_uri(get_registry_uri())
     mlflow.set_experiment("Twitter_Hate_Speech_V19")
-    with mlflow.start_run():
+    with mlflow.start_run() as run:
         mlflow.log_param("max_features", args.max_features)
         mlflow.log_param("n_estimators", args.n_estimators)
         mlflow.log_param("max_depth", args.max_depth)
@@ -168,12 +170,16 @@ def main():
         mlflow.set_tag("model_type", "RandomForest")
         mlflow.set_tag("author", "Variant19")
         mlflow.set_tag("dataset", "twitter_hate_speech")
+        metrics["run_id"] = run.info.run_id
+        metrics["experiment_name"] = "Twitter_Hate_Speech_V19"
+        metrics_file.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
 
     print(f"Accuracy train: {accuracy_train:.4f}, test: {accuracy_test:.4f}")
     print(f"F1 train: {f1_train:.4f}, test: {f1_test:.4f}")
     print(f"Model saved to {model_file}")
     print(f"Metrics saved to {metrics_file}")
     print(f"Confusion matrix saved to {confusion_matrix_file}")
+    print(f"MLflow run id: {metrics['run_id']}")
 
 
 if __name__ == "__main__":

@@ -1,12 +1,15 @@
-# Лабораторні роботи 1-4 з MLOps
+# Лабораторні роботи 1-5 з MLOps
 
-Проєкт присвячений класифікації hate speech у Twitter/X і поступово розширювався від EDA та baseline-моделі до DVC, MLflow, Hydra, Optuna і CI/CD для ML.
+Проєкт присвячений класифікації hate speech у Twitter/X і поступово розширювався від EDA та baseline-моделі до DVC, MLflow, Hydra, Optuna, CI/CD і оркестрації ML-пайплайна через Apache Airflow.
 
 ## Структура проєкту
 
 ```text
 laba1_v2/
 |-- .github/workflows/cml.yaml
+|-- .github/workflows/main.yaml
+|-- CHANGELOG.md
+|-- Dockerfile
 |-- config/
 |   |-- config.yaml
 |   |-- model/
@@ -15,18 +18,26 @@ laba1_v2/
 |   |-- raw/
 |   |-- prepared/
 |   `-- models/
+|-- dags/
+|   `-- ml_training_pipeline.py
+|-- docker-compose.yml
 |-- notebooks/
 |   `-- 01_eda.ipynb
+|-- plugins/
 |-- src/
+|   |-- mlflow_utils.py
 |   |-- preprocess.py
 |   |-- prepare.py
+|   |-- register_model.py
 |   |-- train.py
 |   `-- optimize.py
 |-- tests/
+|   |-- test_dag.py
 |   |-- test_pretrain.py
 |   `-- test_posttrain.py
 |-- dvc.yaml
 |-- dvc.lock
+|-- requirements-airflow.txt
 `-- requirements.txt
 ```
 
@@ -36,6 +47,7 @@ laba1_v2/
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+pip install -r requirements-airflow.txt
 ```
 
 ## Дані
@@ -158,6 +170,73 @@ CML-звіт для PR містить:
 - таблицю числових метрик із `data/models/metrics.json`
 - зображення `confusion_matrix.png`
 - результат Quality Gate
+
+## Оркестрація для ЛР5
+
+Для ЛР5 додано локальний стек Apache Airflow і DAG для continuous training.
+
+Ключові файли:
+
+- `Dockerfile`
+- `docker-compose.yml`
+- `dags/ml_training_pipeline.py`
+- `src/register_model.py`
+- `src/mlflow_utils.py`
+- `.github/workflows/main.yaml`
+- `tests/test_dag.py`
+- `CHANGELOG.md`
+
+### Локальний запуск Airflow
+
+Ініціалізація Airflow:
+
+```bash
+docker compose up airflow-init
+```
+
+Запуск webserver і scheduler:
+
+```bash
+docker compose up airflow-webserver airflow-scheduler
+```
+
+Після запуску UI Airflow буде доступний за адресою [http://127.0.0.1:8080](http://127.0.0.1:8080).
+
+### Логіка DAG
+
+DAG `ml_training_pipeline` виконує:
+
+1. `data_check` - перевіряє наявність сирих даних
+2. `prepare` - запускає `dvc repro prepare`
+3. `train` - запускає `dvc repro train`
+4. `branch_on_quality` - читає `data/models/metrics.json` і перевіряє quality gate
+5. `register_model` - реєструє модель в MLflow Model Registry
+6. `stop_pipeline` - завершує DAG, якщо quality gate не пройдено
+
+### Реєстрація моделі
+
+Для ЛР5 локальний MLflow переведено на SQLite-backed backend store, щоб підтримувати Model Registry.
+
+Ручний запуск реєстрації:
+
+```bash
+python src/register_model.py --metrics-path data/models/metrics.json --model-name twitter-hate-speech-classifier --stage Staging
+```
+
+### CI для ЛР5
+
+Workflow `.github/workflows/main.yaml` перевіряє:
+
+1. linting Python-коду
+2. форматування через `black --check`
+3. DAG integrity test через `DagBag`
+4. успішну збірку Docker image
+
+Окремі DAG-тести можна запустити локально:
+
+```bash
+python -m pytest tests/test_dag.py -q
+```
 
 ## MLflow
 

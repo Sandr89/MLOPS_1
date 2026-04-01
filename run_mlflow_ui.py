@@ -1,12 +1,20 @@
-"""Run MLflow UI with correct file URI for Windows paths."""
+"""Run MLflow UI with a SQLite backend and local artifacts."""
 import subprocess
 import sys
-from pathlib import Path
-
-project_root = Path(__file__).parent
-mlruns = (project_root / "mlruns").resolve()
-uri = f"file:///{mlruns.as_posix()}"
+from src.mlflow_utils import get_artifact_root, get_tracking_uri
 
 print("MLflow UI: http://127.0.0.1:5000")
-print(f"Using: {uri}")
-subprocess.run([sys.executable, "-m", "mlflow", "ui", "--backend-store-uri", uri])
+print(f"Using backend store: {get_tracking_uri()}")
+print(f"Using artifacts: {get_artifact_root()}")
+subprocess.run(
+    [
+        sys.executable,
+        "-m",
+        "mlflow",
+        "server",
+        "--backend-store-uri",
+        get_tracking_uri(),
+        "--default-artifact-root",
+        get_artifact_root().as_uri(),
+    ]
+)
