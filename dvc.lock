@@ -1,8 +1,7 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: .\venv\Scripts\python.exe src/prepare.py data/raw/train.csv 
-      data/prepared
+    cmd: python src/prepare.py data/raw/train.csv data/prepared
     deps:
     - path: data/raw/train.csv
       hash: md5
@@ -10,12 +9,12 @@ stages:
       size: 3103165
     - path: src/prepare.py
       hash: md5
-      md5: e48ca47e5273212a9939a06dffda7791
-      size: 1793
+      md5: 503963fd811edd5c5c3517119e3f092e
+      size: 1822
     - path: src/preprocess.py
       hash: md5
-      md5: 0741dcc37638cde2e26f2d1b94119099
-      size: 1314
+      md5: b4c06ffb3e4e30b29c386c04bdcb41cb
+      size: 1287
     outs:
     - path: data/prepared
       hash: md5
@@ -32,14 +31,14 @@ stages:
       nfiles: 2
     - path: src/train.py
       hash: md5
-      md5: a4d5b560e76ecc7e6bdced08fb7ecdbf
-      size: 4961
+      md5: 856e80d9505026bc483a78c7b17c0940
+      size: 6305
     outs:
     - path: data/models
       hash: md5
-      md5: 37513a0275f0e185b8610b93886cf823.dir
-      size: 740690
-      nfiles: 1
+      md5: aeb92928e4764de25f36baa7142fbce3.dir
+      size: 789701
+      nfiles: 4
   optimize:
     cmd: .\venv\Scripts\python.exe src/optimize.py
     deps:

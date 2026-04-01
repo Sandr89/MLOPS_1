@@ -3,6 +3,7 @@ Data preparation stage: raw CSV -> cleaned train/test splits.
 Input: data/raw/train.csv
 Output: data/prepared/train.csv, data/prepared/test.csv
 """
+
 import argparse
 import sys
 from pathlib import Path
@@ -18,8 +19,12 @@ from src.preprocess import clean_tweet, get_label_column, get_text_column
 
 def main():
     parser = argparse.ArgumentParser(description="Prepare raw data for training")
-    parser.add_argument("input_csv", type=str, help="Path to raw CSV (e.g. data/raw/train.csv)")
-    parser.add_argument("output_dir", type=str, help="Output directory (e.g. data/prepared)")
+    parser.add_argument(
+        "input_csv", type=str, help="Path to raw CSV (e.g. data/raw/train.csv)"
+    )
+    parser.add_argument(
+        "output_dir", type=str, help="Output directory (e.g. data/prepared)"
+    )
     parser.add_argument("--random_state", type=int, default=42)
     parser.add_argument("--test_size", type=float, default=0.2)
     args = parser.parse_args()

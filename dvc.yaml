@@ -1,6 +1,6 @@
 stages:
   prepare:
-    cmd: .\venv\Scripts\python.exe src/prepare.py data/raw/train.csv data/prepared
+    cmd: python src/prepare.py data/raw/train.csv data/prepared
     deps:
       - data/raw/train.csv
       - src/prepare.py
@@ -9,7 +9,7 @@ stages:
       - data/prepared
 
   train:
-    cmd: .\venv\Scripts\python.exe src/train.py data/prepared data/models
+    cmd: python src/train.py data/prepared data/models
     deps:
       - data/prepared
       - src/train.py
@@ -17,7 +17,7 @@ stages:
       - data/models
 
   optimize:
-    cmd: .\venv\Scripts\python.exe src/optimize.py
+    cmd: python src/optimize.py
     deps:
       - data/prepared
       - src/optimize.py

@@ -2,6 +2,7 @@
 Optuna HPO stage with Hydra config and MLflow nested runs.
 Uses data/prepared/train.csv for optimization and data/prepared/test.csv for final evaluation.
 """
+
 import json
 import random
 import subprocess
@@ -44,7 +45,9 @@ def load_prepared_data(prepared_dir: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
     train_csv = prepared_path / "train.csv"
     test_csv = prepared_path / "test.csv"
     if not train_csv.exists() or not test_csv.exists():
-        raise FileNotFoundError(f"Prepared data not found in {prepared_path}. Run prepare stage first.")
+        raise FileNotFoundError(
+            f"Prepared data not found in {prepared_path}. Run prepare stage first."
+        )
 
     train_df = pd.read_csv(train_csv)
     test_df = pd.read_csv(test_csv)
@@ -72,7 +75,9 @@ def suggest_params(trial: optuna.Trial, cfg: DictConfig) -> Dict[str, Any]:
                 step=int(search_space.n_estimators.step),
             ),
             "max_depth": trial.suggest_int(
-                "max_depth", int(search_space.max_depth.low), int(search_space.max_depth.high)
+                "max_depth",
+                int(search_space.max_depth.low),
+                int(search_space.max_depth.high),
             ),
             "min_samples_split": trial.suggest_int(
                 "min_samples_split",
@@ -192,7 +197,9 @@ def main(cfg: DictConfig) -> None:
     else:
         raise ValueError(f"Unsupported sampler: {cfg.hpo.sampler}")
 
-    with mlflow.start_run(run_name=f"study_{cfg.model.type}_{cfg.hpo.sampler}") as parent_run:
+    with mlflow.start_run(
+        run_name=f"study_{cfg.model.type}_{cfg.hpo.sampler}"
+    ) as parent_run:
         mlflow.log_param("model_type", cfg.model.type)
         mlflow.log_param("sampler", cfg.hpo.sampler)
         mlflow.log_param("metric", cfg.metric)
@@ -206,7 +213,10 @@ def main(cfg: DictConfig) -> None:
             sampler=sampler,
             study_name=str(cfg.hpo.study_name),
         )
-        study.optimize(lambda trial: objective(trial, cfg, train_df), n_trials=int(cfg.hpo.n_trials))
+        study.optimize(
+            lambda trial: objective(trial, cfg, train_df),
+            n_trials=int(cfg.hpo.n_trials),
+        )
 
         best_params = dict(study.best_params)
         report_dir = PROJECT_ROOT / str(cfg.paths.report_dir)
@@ -214,8 +224,12 @@ def main(cfg: DictConfig) -> None:
         report_dir.mkdir(parents=True, exist_ok=True)
         model_dir.mkdir(parents=True, exist_ok=True)
 
-        best_params_path = report_dir / f"best_params_{cfg.model.type}_{cfg.hpo.sampler}.json"
-        trials_path = report_dir / f"study_results_{cfg.model.type}_{cfg.hpo.sampler}.json"
+        best_params_path = (
+            report_dir / f"best_params_{cfg.model.type}_{cfg.hpo.sampler}.json"
+        )
+        trials_path = (
+            report_dir / f"study_results_{cfg.model.type}_{cfg.hpo.sampler}.json"
+        )
 
         final_metrics, bundle = fit_and_score(
             train_df["text"],
@@ -226,7 +240,9 @@ def main(cfg: DictConfig) -> None:
             best_params,
         )
 
-        best_model_path = model_dir / f"best_model_{cfg.model.type}_{cfg.hpo.sampler}.joblib"
+        best_model_path = (
+            model_dir / f"best_model_{cfg.model.type}_{cfg.hpo.sampler}.joblib"
+        )
         joblib.dump(bundle, best_model_path)
 
         save_json(

@@ -1,0 +1,76 @@
+name: Model CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      ARTIFACT_DIR: data/models
+      DATA_PATH: data/raw/train.csv
+      F1_THRESHOLD: "0.12"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up CML
+        if: github.event_name == 'pull_request'
+        uses: iterative/setup-cml@v2
+
+      - name: Lint with flake8
+        run: python -m flake8 src tests --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Check formatting with black
+        run: python -m black src tests --check
+
+      - name: Run pre-train tests
+        run: python -m pytest tests/test_pretrain.py -q
+
+      - name: Reproduce prepare and train stages
+        run: dvc repro prepare train
+
+      - name: Run post-train tests
+        run: python -m pytest tests/test_posttrain.py -q
+
+      - name: Create CML report
+        if: github.event_name == 'pull_request'
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "## Model Metrics" > report.md
+          python -c "import json; from pathlib import Path; metrics=json.loads(Path('data/models/metrics.json').read_text(encoding='utf-8')); print('| Metric | Value |'); print('|---|---:|'); [print(f'| {key} | {value:.4f} |') for key, value in metrics.items() if isinstance(value, (int, float))]" >> report.md
+          echo "" >> report.md
+          echo "## Visualization" >> report.md
+          cml publish data/models/confusion_matrix.png --md >> report.md
+          echo "" >> report.md
+          echo "## Quality Gate" >> report.md
+          echo "Required F1 threshold: ${F1_THRESHOLD}" >> report.md
+          python -c "import json, os; from pathlib import Path; metrics=json.loads(Path('data/models/metrics.json').read_text(encoding='utf-8')); f1=float(metrics['f1']); threshold=float(os.environ['F1_THRESHOLD']); print('Status: PASSED' if f1 >= threshold else 'Status: FAILED'); print(f'Observed F1: {f1:.4f}')" >> report.md
+          cml comment create report.md
+
+      - name: Upload model artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model-artifacts
+          path: data/models/
