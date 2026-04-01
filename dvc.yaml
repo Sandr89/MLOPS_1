@@ -1,6 +1,6 @@
 stages:
   prepare:
-    cmd: python src/prepare.py data/raw/train.csv data/prepared
+    cmd: .\venv\Scripts\python.exe src/prepare.py data/raw/train.csv data/prepared
     deps:
       - data/raw/train.csv
       - src/prepare.py
@@ -9,9 +9,23 @@ stages:
       - data/prepared
 
   train:
-    cmd: python src/train.py data/prepared data/models
+    cmd: .\venv\Scripts\python.exe src/train.py data/prepared data/models
     deps:
       - data/prepared
       - src/train.py
     outs:
       - data/models
+
+  optimize:
+    cmd: .\venv\Scripts\python.exe src/optimize.py
+    deps:
+      - data/prepared
+      - src/optimize.py
+      - config/config.yaml
+      - config/model/random_forest.yaml
+      - config/model/logistic_regression.yaml
+      - config/hpo/optuna.yaml
+      - config/hpo/random.yaml
+    outs:
+      - models
+      - reports

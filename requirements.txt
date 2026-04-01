@@ -9,3 +9,6 @@ nltk
 regex
 kaggle
 dvc
+optuna
+hydra-core
+omegaconf

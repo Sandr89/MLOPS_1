@@ -1,0 +1,24 @@
+defaults:
+  - model: logistic_regression
+  - hpo: optuna
+  - _self_
+
+seed: 42
+metric: f1
+n_trials: 20
+
+paths:
+  prepared_dir: data/prepared
+  model_dir: models
+  report_dir: reports
+
+mlflow:
+  tracking_uri: file:///G:/Stuff/University shit/MLOPS/laba1_v2/mlruns
+  experiment_name: Twitter_Hate_Speech_HPO_V19
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job:
+    chdir: false

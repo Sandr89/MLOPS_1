@@ -1,0 +1,5 @@
+sampler: tpe
+direction: maximize
+study_name: optuna_tpe_study
+n_trials: 20
+validation_size: 0.2

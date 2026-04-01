@@ -1,7 +1,8 @@
 schema: '2.0'
 stages:
   prepare:
-    cmd: python src/prepare.py data/raw/train.csv data/prepared
+    cmd: .\venv\Scripts\python.exe src/prepare.py data/raw/train.csv 
+      data/prepared
     deps:
     - path: data/raw/train.csv
       hash: md5
@@ -39,3 +40,46 @@ stages:
       md5: 37513a0275f0e185b8610b93886cf823.dir
       size: 740690
       nfiles: 1
+  optimize:
+    cmd: .\venv\Scripts\python.exe src/optimize.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 02e2fc7642e202b634e0da3731b30d35
+      size: 380
+    - path: config/hpo/optuna.yaml
+      hash: md5
+      md5: aa27193feec4cef739ea5f8cb0a8fd43
+      size: 95
+    - path: config/hpo/random.yaml
+      hash: md5
+      md5: 1492bf65fd0e20df1ce1161268a0d406
+      size: 101
+    - path: config/model/logistic_regression.yaml
+      hash: md5
+      md5: cffe8fe4314739edcf9b715df7fb8f52
+      size: 216
+    - path: config/model/random_forest.yaml
+      hash: md5
+      md5: 1f738c59311b24dca02219afbf472ec6
+      size: 295
+    - path: data/prepared
+      hash: md5
+      md5: cac354563a62404d1a85edf39ba10997.dir
+      size: 2378885
+      nfiles: 2
+    - path: src/optimize.py
+      hash: md5
+      md5: 36ce03e76db9a9a6aaa8cd4b6ceafbc3
+      size: 9933
+    outs:
+    - path: models
+      hash: md5
+      md5: bb5c57bd70d6fe20538aeda5769826d4.dir
+      size: 226884
+      nfiles: 1
+    - path: reports
+      hash: md5
+      md5: 19487aeb11131c891f30554cc7fdaba0.dir
+      size: 870
+      nfiles: 2

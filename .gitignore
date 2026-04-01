@@ -47,3 +47,10 @@ dvc_storage/
 *.swo
 *~
 download_data.py
+/models
+/reports
+outputs/
+multirun/
+
+optimize.log
+

@@ -1,0 +1,12 @@
+type: logistic_regression
+max_features: 5000
+ngram_range: [1, 2]
+search_space:
+  C:
+    low: 0.001
+    high: 100.0
+    log: true
+  solver:
+    choices: [liblinear, lbfgs]
+  class_weight:
+    choices: [null, balanced]
